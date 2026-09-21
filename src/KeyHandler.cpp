@@ -158,18 +158,25 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     }
   }
 
-  // Compose the reading if either there's a tone marker, or if the reading is
-  // not empty, and space is pressed.
+  // Compose the reading if the current key produces a tone marker, or if the
+  // reading is not empty and space is pressed.
   bool shouldComposeReading =
-      (reading_.hasToneMarker() && !reading_.hasToneMarkerOnly()) ||
+      (keyConsumedByReading && reading_.hasToneMarker() &&
+       !reading_.hasToneMarkerOnly()) ||
       (!reading_.isEmpty() && simpleAscii == Key::SPACE);
 
   if (shouldComposeReading) {
     std::string syllable = reading_.syllable().composedString();
-    reading_.clear();
 
     if (!lm_->hasUnigrams(syllable)) {
       errorCallback();
+
+      if (keepReadingUponCompositionError_) {
+        stateCallback(buildInputtingState());
+        return true;
+      }
+
+      reading_.clear();
       if (grid_.length() == 0) {
         stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
       } else {
@@ -178,6 +185,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
       return true;
     }
 
+    reading_.clear();
     grid_.insertReading(syllable);
     walk();
 
@@ -758,6 +766,10 @@ void KeyHandler::setPutLowercaseLettersToComposingBuffer(bool flag) {
 
 void KeyHandler::setEscKeyClearsEntireComposingBuffer(bool flag) {
   escKeyClearsEntireComposingBuffer_ = flag;
+}
+
+void KeyHandler::setKeepReadingUponCompositionError(bool flag) {
+  keepReadingUponCompositionError_ = flag;
 }
 
 void KeyHandler::setShiftEnterEnabled(bool flag) { shiftEnterEnabled_ = flag; }

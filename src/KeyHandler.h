@@ -160,6 +160,9 @@ class KeyHandler {
   // Sets if the ESC key clears entire composing buffer.
   void setEscKeyClearsEntireComposingBuffer(bool flag);
 
+  // Sets if the reading should be kept when composition fails.
+  void setKeepReadingUponCompositionError(bool flag);
+
   // Sets if the Shift + Enter key is enabled.
   void setShiftEnterEnabled(bool flag);
 
@@ -320,6 +323,7 @@ class KeyHandler {
   bool moveCursorAfterSelection_ = false;
   bool putLowercaseLettersToComposingBuffer_ = false;
   bool escKeyClearsEntireComposingBuffer_ = false;
+  bool keepReadingUponCompositionError_ = false;
   bool shiftEnterEnabled_ = true;
   bool associatedPhrasesEnabled_ = false;
   bool halfWidthPunctuationEnabled_ = false;

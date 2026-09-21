@@ -414,6 +414,31 @@ TEST_F(
   ASSERT_TRUE(emptyState != nullptr);
 }
 
+TEST_F(KeyHandlerTest, NonViableCompositionKeepsReadingWhenConfigured) {
+  keyHandler_->setKeepReadingUponCompositionError(true);
+
+  // ㄅˇ is not a viable composition, but should remain editable.
+  auto endState = handleKeySequence(asciiKeys("13"), /*expectHandled=*/true,
+                                    /*expectErrorCallbackAtEnd=*/true);
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  EXPECT_EQ(inputtingState->composingBuffer, "ㄅˇ");
+  EXPECT_EQ(inputtingState->cursorIndex, strlen("ㄅˇ"));
+}
+
+TEST_F(KeyHandlerTest,
+       NonViableCompositionCanBeCorrectedWhenReadingIsKept) {
+  keyHandler_->setKeepReadingUponCompositionError(true);
+
+  auto keys = asciiKeys("13");
+  keys.emplace_back(Key::asciiKey(Key::BACKSPACE));
+  auto endState = handleKeySequence(keys);
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  EXPECT_EQ(inputtingState->composingBuffer, "ㄅ");
+  EXPECT_EQ(inputtingState->cursorIndex, strlen("ㄅ"));
+}
+
 TEST_F(
     KeyHandlerTest,
     NonViableCompositionShouldRevertToEmptyStateIfComposingBufferEndsUpEmptyCase2) {

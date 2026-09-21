@@ -152,6 +152,11 @@ FCITX_CONFIGURATION(
         this, "EscKeyClearsEntireComposingBuffer",
         _("ESC key clears entire composing buffer"), false};
 
+    // Keep the Bopomofo reading when composition fails.
+    fcitx::Option<bool> keepReadingUponCompositionError{
+        this, "KeepReadingUponCompositionError",
+        _("Keep reading upon composition error"), false};
+
     // Allow inputting Chinese when Caps Lock is on.
     fcitx::Option<bool> capsLockAllowChineseInput{
         this, "capsLockAllowChineseInput",
