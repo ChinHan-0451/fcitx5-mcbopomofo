@@ -409,6 +409,9 @@ msgstr "ESC key clears entire composing buffer"
 msgid "Keep reading upon composition error"
 msgstr "Keep reading upon composition error"
 
+msgid "Clear existing tone when entering another Bopomofo component"
+msgstr "Clear existing tone when entering another Bopomofo component"
+
 #: src/McBopomofo.h:158
 msgid "Allow typing in Chinese while Caps Lock is on (like MS IME)"
 msgstr "Allow typing in Chinese while Caps Lock is on (like MS IME)"

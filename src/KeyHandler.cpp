@@ -147,7 +147,31 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
   // See if it's valid BPMF reading.
   bool keyConsumedByReading = false;
-  if (reading_.isValidKey(simpleAscii)) {
+  // A tone can remain in the reading either after a failed composition or
+  // when it was entered on its own. Apply the same configurable behavior in
+  // both cases when the next key is another valid Bopomofo component. Space
+  // is deliberately excluded because it composes a standalone tone marker.
+  if ((readingCompositionFailed_ || reading_.hasToneMarkerOnly()) &&
+      reading_.hasToneMarker()) {
+    auto readingWithoutTone = reading_;
+    readingWithoutTone.backspace();
+    auto readingWithNewKey = readingWithoutTone;
+    bool newKeyIsNonToneBopomofo =
+        readingWithNewKey.isValidKey(simpleAscii) &&
+        readingWithNewKey.combineKey(simpleAscii) &&
+        !readingWithNewKey.hasToneMarker();
+    if (newKeyIsNonToneBopomofo) {
+      readingCompositionFailed_ = false;
+
+      if (clearToneOnNewBopomofoInput_) {
+        reading_ = readingWithoutTone;
+      } else {
+        keyConsumedByReading =
+            reading_.combineKeyBeforeToneMarker(simpleAscii);
+      }
+    }
+  }
+  if (!keyConsumedByReading && reading_.isValidKey(simpleAscii)) {
     reading_.combineKey(simpleAscii);
     keyConsumedByReading = true;
     // If asciiChar does not lead to a tone marker, we are done. Tone marker
@@ -172,11 +196,12 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
       errorCallback();
 
       if (keepReadingUponCompositionError_) {
+        readingCompositionFailed_ = true;
         stateCallback(buildInputtingState());
         return true;
       }
 
-      reading_.clear();
+      clearReading();
       if (grid_.length() == 0) {
         stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
       } else {
@@ -185,7 +210,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
       return true;
     }
 
-    reading_.clear();
+    clearReading();
     grid_.insertReading(syllable);
     walk();
 
@@ -297,7 +322,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
     }
 
     if (!reading_.isEmpty()) {
-      reading_.clear();
+      clearReading();
       if (grid_.length() == 0) {
         stateCallback(std::make_unique<InputStates::EmptyIgnoringPrevious>());
       } else {
@@ -736,9 +761,14 @@ void KeyHandler::excludePhrase(const std::string& reading,
 }
 
 void KeyHandler::reset() {
-  reading_.clear();
+  clearReading();
   grid_.clear();
   latestWalk_ = Formosa::Gramambular2::ReadingGrid::WalkResult();
+}
+
+void KeyHandler::clearReading() {
+  reading_.clear();
+  readingCompositionFailed_ = false;
 }
 
 #pragma region Settings
@@ -770,6 +800,10 @@ void KeyHandler::setEscKeyClearsEntireComposingBuffer(bool flag) {
 
 void KeyHandler::setKeepReadingUponCompositionError(bool flag) {
   keepReadingUponCompositionError_ = flag;
+}
+
+void KeyHandler::setClearToneOnNewBopomofoInput(bool flag) {
+  clearToneOnNewBopomofoInput_ = flag;
 }
 
 void KeyHandler::setShiftEnterEnabled(bool flag) { shiftEnterEnabled_ = flag; }
@@ -923,7 +957,7 @@ bool KeyHandler::handleAssociatedPhrases(InputStates::Inputting* state,
 }
 
 void KeyHandler::handleForceCommitAndReset(StateCallback stateCallback) {
-  reading_.clear();
+  clearReading();
   auto inputtingState = buildInputtingState();
   auto committingState = std::make_unique<InputStates::Committing>(
       inputtingState->composingBuffer);
@@ -1077,7 +1111,7 @@ bool KeyHandler::handleDeleteKeys(Key key, McBopomofo::InputState* state,
   }
 
   if (reading_.hasToneMarkerOnly()) {
-    reading_.clear();
+    clearReading();
   } else if (reading_.isEmpty()) {
     bool isValidDelete = false;
 
@@ -1097,6 +1131,7 @@ bool KeyHandler::handleDeleteKeys(Key key, McBopomofo::InputState* state,
   } else {
     if (key.ascii == Key::BACKSPACE) {
       reading_.backspace();
+      readingCompositionFailed_ = false;
     } else {
       // Del not supported when bopomofo reading is active.
       errorCallback();

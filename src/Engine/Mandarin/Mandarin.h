@@ -430,6 +430,38 @@ class BopomofoReadingBuffer {
     return true;
   }
 
+  // Inserts a key immediately before an existing tone marker. This allows a
+  // retained, failed reading such as ㄅˇ to become ㄅㄚˇ when ㄚ is entered.
+  bool combineKeyBeforeToneMarker(char k) {
+    if (!hasToneMarker()) return false;
+
+    if (pinyin_mode_) {
+      if (pinyin_sequence_.empty()) return false;
+      char tone = pinyin_sequence_.back();
+      if (tone < '2' || tone > '5') return false;
+
+      char lk = tolower(k);
+      if (lk < 'a' || lk > 'z') return false;
+
+      pinyin_sequence_.pop_back();
+      pinyin_sequence_ += std::string(1, lk);
+      pinyin_sequence_ += std::string(1, tone);
+      syllable_ = BPMF::FromHanyuPinyin(pinyin_sequence_);
+      return true;
+    }
+
+    if (!layout_ || layout_->keyToComponents(k).empty()) return false;
+    std::string sequence = layout_->keySequenceFromSyllable(syllable_);
+    if (sequence.empty()) return false;
+
+    char tone = sequence.back();
+    sequence.pop_back();
+    sequence += std::string(1, k);
+    sequence += std::string(1, tone);
+    syllable_ = layout_->syllableFromKeySequence(sequence);
+    return true;
+  }
+
   void clear() {
     pinyin_sequence_.clear();
     syllable_.clear();

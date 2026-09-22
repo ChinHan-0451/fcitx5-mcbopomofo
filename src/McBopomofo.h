@@ -157,6 +157,12 @@ FCITX_CONFIGURATION(
         this, "KeepReadingUponCompositionError",
         _("Keep reading upon composition error"), false};
 
+    // Clear an existing tone when entering another Bopomofo component.
+    fcitx::Option<bool> clearToneOnNewBopomofoInput{
+        this, "ClearToneOnNewBopomofoInput",
+        _("Clear existing tone when entering another Bopomofo component"),
+        false};
+
     // Allow inputting Chinese when Caps Lock is on.
     fcitx::Option<bool> capsLockAllowChineseInput{
         this, "capsLockAllowChineseInput",

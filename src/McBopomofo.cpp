@@ -689,6 +689,8 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
       config_.escKeyClearsEntireComposingBuffer.value());
   keyHandler_->setKeepReadingUponCompositionError(
       config_.keepReadingUponCompositionError.value());
+  keyHandler_->setClearToneOnNewBopomofoInput(
+      config_.clearToneOnNewBopomofoInput.value());
   keyHandler_->setPutLowercaseLettersToComposingBuffer(
       config_.shiftLetterKeys.value() == ShiftLetterKeys::PutLowercaseToBuffer);
   keyHandler_->setShiftEnterEnabled(config_.shiftEnterEnabled.value());

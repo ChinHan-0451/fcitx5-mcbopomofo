@@ -163,6 +163,10 @@ class KeyHandler {
   // Sets if the reading should be kept when composition fails.
   void setKeepReadingUponCompositionError(bool flag);
 
+  // Sets if the tone should be cleared when a new reading key is entered
+  // after composition fails.
+  void setClearToneOnNewBopomofoInput(bool flag);
+
   // Sets if the Shift + Enter key is enabled.
   void setShiftEnterEnabled(bool flag);
 
@@ -241,6 +245,8 @@ class KeyHandler {
 #pragma endregion Settings
 
  private:
+  void clearReading();
+
   bool handleBig5(Key key, McBopomofo::InputStates::Big5* state,
                   StateCallback stateCallback,
                   KeyHandler::ErrorCallback errorCallback);
@@ -324,6 +330,8 @@ class KeyHandler {
   bool putLowercaseLettersToComposingBuffer_ = false;
   bool escKeyClearsEntireComposingBuffer_ = false;
   bool keepReadingUponCompositionError_ = false;
+  bool clearToneOnNewBopomofoInput_ = false;
+  bool readingCompositionFailed_ = false;
   bool shiftEnterEnabled_ = true;
   bool associatedPhrasesEnabled_ = false;
   bool halfWidthPunctuationEnabled_ = false;
