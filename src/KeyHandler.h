@@ -64,14 +64,18 @@ class KeyHandler {
   using StateCallback =
       std::function<void(std::unique_ptr<McBopomofo::InputState>)>;
   using ErrorCallback = std::function<void(void)>;
+  using ReadingCompositionErrorCallback = std::function<void(void)>;
   using SelectCurrentCandidateCallback = std::function<void(void)>;
 
   // Given a fcitx5 KeyEvent and the current state, invokes the stateCallback if
-  // a new state is entered, or errorCallback will be invoked. Returns true if
-  // the key should be absorbed, signaling that the key is accepted and handled,
-  // or false if the event should be let pass through.
+  // a new state is entered, or errorCallback will be invoked. A reading
+  // composition failure also invokes readingCompositionErrorCallback. Returns
+  // true if the key should be absorbed, signaling that the key is accepted and
+  // handled, or false if the event should be let pass through.
   bool handle(Key key, McBopomofo::InputState* state,
-              StateCallback stateCallback, ErrorCallback errorCallback);
+              StateCallback stateCallback, ErrorCallback errorCallback,
+              ReadingCompositionErrorCallback readingCompositionErrorCallback =
+                  []() {});
 
   bool handleAssociatedPhrases(InputStates::Inputting* state,
                                StateCallback stateCallback,

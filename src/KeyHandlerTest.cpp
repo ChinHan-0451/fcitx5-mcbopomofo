@@ -133,14 +133,17 @@ class KeyHandlerTest : public ::testing::Test {
   // Given a sequence of keys, return the last state.
   std::unique_ptr<InputState> handleKeySequence(
       const std::vector<Key>& keys, bool expectHandled = true,
-      bool expectErrorCallbackAtEnd = false) {
+      bool expectErrorCallbackAtEnd = false,
+      bool expectReadingCompositionErrorCallbackAtEnd = false) {
     std::unique_ptr<InputState> state = std::make_unique<InputStates::Empty>();
 
     bool handled = false;
     bool errorCallbackInvoked = false;
+    bool readingCompositionErrorCallbackInvoked = false;
 
     for (const Key& key : keys) {
       errorCallbackInvoked = false;
+      readingCompositionErrorCallbackInvoked = false;
       handled = keyHandler_->handle(
           key, state.get(),
           [&state](std::unique_ptr<McBopomofo::InputState> newState) {
@@ -164,11 +167,16 @@ class KeyHandlerTest : public ::testing::Test {
               processState(std::move(newState));
             }
           },
-          [&errorCallbackInvoked]() { errorCallbackInvoked = true; });
+          [&errorCallbackInvoked]() { errorCallbackInvoked = true; },
+          [&readingCompositionErrorCallbackInvoked]() {
+            readingCompositionErrorCallbackInvoked = true;
+          });
     }
 
     EXPECT_EQ(expectHandled, handled);
     EXPECT_EQ(expectErrorCallbackAtEnd, errorCallbackInvoked);
+    EXPECT_EQ(expectReadingCompositionErrorCallbackAtEnd,
+              readingCompositionErrorCallbackInvoked);
     return state;
   }
 
@@ -442,8 +450,9 @@ TEST_F(
     NonViableCompositionShouldRevertToEmptyStateIfComposingBufferEndsUpEmptyCase1) {
   auto keys = asciiKeys("13");
   // ㄅˇ is not a viable composition.
-  auto endState = handleKeySequence(keys, /*expectHandled=*/true,
-                                    /*expectErrorCallbackAtEnd=*/true);
+  auto endState = handleKeySequence(
+      keys, /*expectHandled=*/true, /*expectErrorCallbackAtEnd=*/true,
+      /*expectReadingCompositionErrorCallbackAtEnd=*/true);
   auto emptyState = dynamic_cast<InputStates::Empty*>(endState.get());
   ASSERT_TRUE(emptyState != nullptr);
 }
@@ -452,8 +461,10 @@ TEST_F(KeyHandlerTest, NonViableCompositionKeepsReadingWhenConfigured) {
   keyHandler_->setKeepReadingUponCompositionError(true);
 
   // ㄅˇ is not a viable composition, but should remain editable.
-  auto endState = handleKeySequence(asciiKeys("13"), /*expectHandled=*/true,
-                                    /*expectErrorCallbackAtEnd=*/true);
+  auto endState = handleKeySequence(
+      asciiKeys("13"), /*expectHandled=*/true,
+      /*expectErrorCallbackAtEnd=*/true,
+      /*expectReadingCompositionErrorCallbackAtEnd=*/true);
   auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
   ASSERT_TRUE(inputtingState != nullptr);
   EXPECT_EQ(inputtingState->composingBuffer, "ㄅˇ");

@@ -412,6 +412,9 @@ msgstr "Keep reading upon composition error"
 msgid "Clear existing tone when entering another Bopomofo component"
 msgstr "Clear existing tone when entering another Bopomofo component"
 
+msgid "Play sound on reading composition error"
+msgstr "Play sound on reading composition error"
+
 #: src/McBopomofo.h:158
 msgid "Allow typing in Chinese while Caps Lock is on (like MS IME)"
 msgstr "Allow typing in Chinese while Caps Lock is on (like MS IME)"

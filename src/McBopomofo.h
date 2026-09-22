@@ -45,6 +45,8 @@
 #include "LanguageModelLoader.h"
 #include "PathCompat.h"
 
+struct ca_context;
+
 namespace McBopomofo {
 
 enum class BopomofoKeyboardLayout {
@@ -163,6 +165,12 @@ FCITX_CONFIGURATION(
         _("Clear existing tone when entering another Bopomofo component"),
         false};
 
+    // Play a desktop warning sound when a Bopomofo reading cannot be
+    // composed.
+    fcitx::Option<bool> playSoundOnCompositionError{
+        this, "PlaySoundOnCompositionError",
+        _("Play sound on reading composition error"), false};
+
     // Allow inputting Chinese when Caps Lock is on.
     fcitx::Option<bool> capsLockAllowChineseInput{
         this, "capsLockAllowChineseInput",
@@ -256,6 +264,7 @@ FCITX_CONFIGURATION(
 class McBopomofoEngine : public fcitx::InputMethodEngine {
  public:
   explicit McBopomofoEngine(fcitx::Instance* instance);
+  ~McBopomofoEngine() override;
   fcitx::Instance* instance() { return instance_; }
 
   void activate(const fcitx::InputMethodEntry& entry,
@@ -290,6 +299,8 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   void handleStateOrSequence(fcitx::InputContext* context,
                              std::unique_ptr<InputState> newState);
 
+  void playCompositionErrorSound();
+
   // Methods below enterNewState raw pointers as they don't affect ownership.
   void handleEmptyState(fcitx::InputContext* context, InputState* prev,
                         InputStates::Empty* current);
@@ -323,6 +334,7 @@ class McBopomofoEngine : public fcitx::InputMethodEngine {
   std::shared_ptr<KeyHandler> keyHandler_;
   std::unique_ptr<InputState> state_;
   McBopomofoConfig config_;
+  ca_context* soundContext_ = nullptr;
   fcitx::KeyList selectionKeys_;
   fcitx::KeyList numpadSelectionKeys_;
 

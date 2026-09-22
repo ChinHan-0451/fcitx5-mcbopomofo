@@ -413,6 +413,9 @@ msgstr "組字錯誤時保留注音"
 msgid "Clear existing tone when entering another Bopomofo component"
 msgstr "輸入下一個注音時清除既有聲調"
 
+msgid "Play sound on reading composition error"
+msgstr "注音組字錯誤時播放提示音"
+
 #: src/McBopomofo.h:158
 msgid "Allow typing in Chinese while Caps Lock is on (like MS IME)"
 msgstr "在大寫鎖定時也能輸入中文（像微軟新注音）"

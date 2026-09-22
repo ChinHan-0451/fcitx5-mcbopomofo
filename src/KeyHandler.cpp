@@ -117,7 +117,9 @@ KeyHandler::KeyHandler(
 
 bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
                         StateCallback stateCallback,
-                        ErrorCallback errorCallback) {
+                        ErrorCallback errorCallback,
+                        ReadingCompositionErrorCallback
+                            readingCompositionErrorCallback) {
   if (key.ascii == '\\' && key.ctrlPressed) {
     auto seq = std::make_unique<InputStates::StateSequence>();
     seq->push_back(std::make_unique<InputStates::Empty>());
@@ -194,6 +196,7 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
     if (!lm_->hasUnigrams(syllable)) {
       errorCallback();
+      readingCompositionErrorCallback();
 
       if (keepReadingUponCompositionError_) {
         readingCompositionFailed_ = true;
