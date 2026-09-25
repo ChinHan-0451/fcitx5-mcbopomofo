@@ -64,18 +64,14 @@ class KeyHandler {
   using StateCallback =
       std::function<void(std::unique_ptr<McBopomofo::InputState>)>;
   using ErrorCallback = std::function<void(void)>;
-  using ReadingCompositionErrorCallback = std::function<void(void)>;
   using SelectCurrentCandidateCallback = std::function<void(void)>;
 
   // Given a fcitx5 KeyEvent and the current state, invokes the stateCallback if
-  // a new state is entered, or errorCallback will be invoked. A reading
-  // composition failure also invokes readingCompositionErrorCallback. Returns
-  // true if the key should be absorbed, signaling that the key is accepted and
-  // handled, or false if the event should be let pass through.
+  // a new state is entered, or errorCallback will be invoked. Returns true if
+  // the key should be absorbed, signaling that the key is accepted and handled,
+  // or false if the event should be let pass through.
   bool handle(Key key, McBopomofo::InputState* state,
-              StateCallback stateCallback, ErrorCallback errorCallback,
-              ReadingCompositionErrorCallback readingCompositionErrorCallback =
-                  []() {});
+              StateCallback stateCallback, ErrorCallback errorCallback);
 
   bool handleAssociatedPhrases(InputStates::Inputting* state,
                                StateCallback stateCallback,
@@ -164,12 +160,9 @@ class KeyHandler {
   // Sets if the ESC key clears entire composing buffer.
   void setEscKeyClearsEntireComposingBuffer(bool flag);
 
-  // Sets if the reading should be kept when composition fails.
-  void setKeepReadingUponCompositionError(bool flag);
-
-  // Sets if the tone should be cleared when a new reading key is entered
-  // after composition fails.
-  void setClearToneOnNewBopomofoInput(bool flag);
+  // Keeps an invalid reading editable and clears its old tone when a new
+  // Bopomofo component is entered.
+  void setKeepInvalidSyllableForFurtherInput(bool flag);
 
   // Sets if the Shift + Enter key is enabled.
   void setShiftEnterEnabled(bool flag);
@@ -333,8 +326,7 @@ class KeyHandler {
   bool moveCursorAfterSelection_ = false;
   bool putLowercaseLettersToComposingBuffer_ = false;
   bool escKeyClearsEntireComposingBuffer_ = false;
-  bool keepReadingUponCompositionError_ = false;
-  bool clearToneOnNewBopomofoInput_ = false;
+  bool keepInvalidSyllableForFurtherInput_ = false;
   bool readingCompositionFailed_ = false;
   bool shiftEnterEnabled_ = true;
   bool associatedPhrasesEnabled_ = false;

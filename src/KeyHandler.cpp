@@ -117,9 +117,7 @@ KeyHandler::KeyHandler(
 
 bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
                         StateCallback stateCallback,
-                        ErrorCallback errorCallback,
-                        ReadingCompositionErrorCallback
-                            readingCompositionErrorCallback) {
+                        ErrorCallback errorCallback) {
   if (key.ascii == '\\' && key.ctrlPressed) {
     auto seq = std::make_unique<InputStates::StateSequence>();
     seq->push_back(std::make_unique<InputStates::Empty>());
@@ -153,7 +151,8 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
   // when it was entered on its own. Apply the same configurable behavior in
   // both cases when the next key is another valid Bopomofo component. Space
   // is deliberately excluded because it composes a standalone tone marker.
-  if ((readingCompositionFailed_ || reading_.hasToneMarkerOnly()) &&
+  if (keepInvalidSyllableForFurtherInput_ &&
+      (readingCompositionFailed_ || reading_.hasToneMarkerOnly()) &&
       reading_.hasToneMarker()) {
     auto readingWithoutTone = reading_;
     readingWithoutTone.backspace();
@@ -164,16 +163,10 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
         !readingWithNewKey.hasToneMarker();
     if (newKeyIsNonToneBopomofo) {
       readingCompositionFailed_ = false;
-
-      if (clearToneOnNewBopomofoInput_) {
-        reading_ = readingWithoutTone;
-      } else {
-        keyConsumedByReading =
-            reading_.combineKeyBeforeToneMarker(simpleAscii);
-      }
+      reading_ = readingWithoutTone;
     }
   }
-  if (!keyConsumedByReading && reading_.isValidKey(simpleAscii)) {
+  if (reading_.isValidKey(simpleAscii)) {
     reading_.combineKey(simpleAscii);
     keyConsumedByReading = true;
     // If asciiChar does not lead to a tone marker, we are done. Tone marker
@@ -196,9 +189,8 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
 
     if (!lm_->hasUnigrams(syllable)) {
       errorCallback();
-      readingCompositionErrorCallback();
 
-      if (keepReadingUponCompositionError_) {
+      if (keepInvalidSyllableForFurtherInput_) {
         readingCompositionFailed_ = true;
         stateCallback(buildInputtingState());
         return true;
@@ -801,12 +793,8 @@ void KeyHandler::setEscKeyClearsEntireComposingBuffer(bool flag) {
   escKeyClearsEntireComposingBuffer_ = flag;
 }
 
-void KeyHandler::setKeepReadingUponCompositionError(bool flag) {
-  keepReadingUponCompositionError_ = flag;
-}
-
-void KeyHandler::setClearToneOnNewBopomofoInput(bool flag) {
-  clearToneOnNewBopomofoInput_ = flag;
+void KeyHandler::setKeepInvalidSyllableForFurtherInput(bool flag) {
+  keepInvalidSyllableForFurtherInput_ = flag;
 }
 
 void KeyHandler::setShiftEnterEnabled(bool flag) { shiftEnterEnabled_ = flag; }

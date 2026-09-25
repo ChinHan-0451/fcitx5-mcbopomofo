@@ -399,13 +399,7 @@ msgid "ESC key clears entire composing buffer"
 msgstr ""
 
 #: src/McBopomofo.h:160
-msgid "Keep reading upon composition error"
-msgstr ""
-
-msgid "Clear existing tone when entering another Bopomofo component"
-msgstr ""
-
-msgid "Play sound on reading composition error"
+msgid "Keep invalid syllable for further input"
 msgstr ""
 
 #: src/McBopomofo.h:158

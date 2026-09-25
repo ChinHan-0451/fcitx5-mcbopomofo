@@ -86,27 +86,6 @@ TEST(MandarinTest, StandardLayoutCombination) {
   ASSERT_EQ(buf.composedString(), "ㄗㄞˇ");
 }
 
-TEST(MandarinTest, StandardLayoutCombinationBeforeToneMarker) {
-  BopomofoReadingBuffer buf(BopomofoKeyboardLayout::StandardLayout());
-  buf.combineKey('1');
-  buf.combineKey('3');
-  ASSERT_EQ(buf.composedString(), "ㄅˇ");
-
-  ASSERT_TRUE(buf.combineKeyBeforeToneMarker('8'));
-  ASSERT_EQ(buf.composedString(), "ㄅㄚˇ");
-}
-
-TEST(MandarinTest, HanyuPinyinCombinationBeforeToneMarker) {
-  BopomofoReadingBuffer buf(BopomofoKeyboardLayout::HanyuPinyinLayout());
-  buf.combineKey('b');
-  buf.combineKey('3');
-  ASSERT_EQ(buf.composedString(), "b3");
-
-  ASSERT_TRUE(buf.combineKeyBeforeToneMarker('a'));
-  ASSERT_EQ(buf.composedString(), "ba3");
-  ASSERT_EQ(buf.syllable().composedString(), "ㄅㄚˇ");
-}
-
 TEST(MandarinTest, ETenLayout) {
   BopomofoReadingBuffer buf(BopomofoKeyboardLayout::ETenLayout());
   buf.combineKey('x');

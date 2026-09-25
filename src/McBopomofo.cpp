@@ -31,8 +31,6 @@
 #include <fmt/format.h>
 #include <notifications_public.h>  // from fcitx-module/notifications
 
-#include <canberra.h>
-
 #include <memory>
 #include <sstream>
 #include <string>
@@ -585,32 +583,6 @@ McBopomofoEngine::McBopomofoEngine(fcitx::Instance* instance)
   reloadConfig();
 }
 
-McBopomofoEngine::~McBopomofoEngine() {
-  if (soundContext_ != nullptr) {
-    ca_context_destroy(soundContext_);
-  }
-}
-
-void McBopomofoEngine::playCompositionErrorSound() {
-  if (!config_.playSoundOnCompositionError.value()) {
-    return;
-  }
-
-  if (soundContext_ == nullptr) {
-    if (ca_context_create(&soundContext_) < 0) {
-      soundContext_ = nullptr;
-      return;
-    }
-    ca_context_change_props(
-        soundContext_, CA_PROP_APPLICATION_NAME, "McBopomofo",
-        CA_PROP_APPLICATION_ID, "org.fcitx.Fcitx5.McBopomofo", nullptr);
-  }
-
-  ca_context_play(soundContext_, 0, CA_PROP_EVENT_ID, "dialog-warning",
-                  CA_PROP_EVENT_DESCRIPTION,
-                  "Bopomofo reading composition error", nullptr);
-}
-
 const fcitx::Configuration* McBopomofoEngine::getConfig() const {
   return &config_;
 }
@@ -715,10 +687,8 @@ void McBopomofoEngine::activate(const fcitx::InputMethodEntry& entry,
       config_.moveCursorAfterSelection.value());
   keyHandler_->setEscKeyClearsEntireComposingBuffer(
       config_.escKeyClearsEntireComposingBuffer.value());
-  keyHandler_->setKeepReadingUponCompositionError(
-      config_.keepReadingUponCompositionError.value());
-  keyHandler_->setClearToneOnNewBopomofoInput(
-      config_.clearToneOnNewBopomofoInput.value());
+  keyHandler_->setKeepInvalidSyllableForFurtherInput(
+      config_.keepInvalidSyllableForFurtherInput.value());
   keyHandler_->setPutLowercaseLettersToComposingBuffer(
       config_.shiftLetterKeys.value() == ShiftLetterKeys::PutLowercaseToBuffer);
   keyHandler_->setShiftEnterEnabled(config_.shiftEnterEnabled.value());
@@ -918,8 +888,7 @@ void McBopomofoEngine::keyEvent(const fcitx::InputMethodEntry& /*unused*/,
       },
       []() {
         // TODO(unassigned): beep?
-      },
-      [this]() { playCompositionErrorSound(); });
+      });
 
   if (accepted) {
     keyEvent.filterAndAccept();

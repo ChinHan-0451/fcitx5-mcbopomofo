@@ -407,14 +407,8 @@ msgid "ESC key clears entire composing buffer"
 msgstr "ESC 按鍵清除輸入緩衝區的所有內容"
 
 #: src/McBopomofo.h:160
-msgid "Keep reading upon composition error"
-msgstr "組字錯誤時保留注音"
-
-msgid "Clear existing tone when entering another Bopomofo component"
-msgstr "輸入下一個注音時清除既有聲調"
-
-msgid "Play sound on reading composition error"
-msgstr "注音組字錯誤時播放提示音"
+msgid "Keep invalid syllable for further input"
+msgstr "組字失敗時保留注音並繼續輸入"
 
 #: src/McBopomofo.h:158
 msgid "Allow typing in Chinese while Caps Lock is on (like MS IME)"
