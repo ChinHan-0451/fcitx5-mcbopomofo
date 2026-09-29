@@ -409,6 +409,10 @@ msgstr "ESC key clears entire composing buffer"
 msgid "Keep invalid syllable for further input"
 msgstr "Keep invalid syllable for further input"
 
+#: src/McBopomofo.h:168
+msgid "Play sound on reading composition error"
+msgstr "Play sound on reading composition error"
+
 #: src/McBopomofo.h:158
 msgid "Allow typing in Chinese while Caps Lock is on (like MS IME)"
 msgstr "Allow typing in Chinese while Caps Lock is on (like MS IME)"

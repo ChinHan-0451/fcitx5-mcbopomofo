@@ -13,6 +13,7 @@ find_package(Gettext REQUIRED)
 find_package(ICU COMPONENTS uc i18n REQUIRED)
 
 pkg_check_modules(JSONC REQUIRED IMPORTED_TARGET "json-c")
+pkg_check_modules(CANBERRA REQUIRED IMPORTED_TARGET "libcanberra")
 include_directories(${JSONC_INCLUDE_DIRS})
 link_directories(${JSONC_LIBRARY_DIRS})
 
@@ -76,7 +77,7 @@ include_directories(Big5Utils)
 
 add_library(mcbopomofo MODULE McBopomofo.cpp)
 target_compile_options(mcbopomofo PRIVATE -Wno-unknown-pragmas)
-target_link_libraries(mcbopomofo PRIVATE Fcitx5::Core Fcitx5::Module::Notifications McBopomofoLib fmt::fmt ${JSONC_LIBRARIES})
+target_link_libraries(mcbopomofo PRIVATE Fcitx5::Core Fcitx5::Module::Notifications McBopomofoLib fmt::fmt ${JSONC_LIBRARIES} PkgConfig::CANBERRA)
 target_include_directories(mcbopomofo PRIVATE Fcitx5::Core Fcitx5::Module::Notifications fmt::fmt)
 set_target_properties(mcbopomofo PROPERTIES PREFIX "")
 target_compile_definitions(mcbopomofo PRIVATE FCITX_GETTEXT_DOMAIN=\"fcitx5-mcbopomofo\")
