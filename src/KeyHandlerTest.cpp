@@ -486,6 +486,17 @@ TEST_F(KeyHandlerTest,
   EXPECT_EQ(inputtingState->cursorIndex, strlen("ㄅㄚ"));
 }
 
+TEST_F(KeyHandlerTest, SpaceClearsToneAfterCompositionError) {
+  keyHandler_->setKeepInvalidSyllableForFurtherInput(true);
+
+  // ㄔㄜˊ is not viable. Space should retry ㄔㄜ and compose 車.
+  auto endState = handleKeySequence(asciiKeys("tk6 "));
+  auto inputtingState = dynamic_cast<InputStates::Inputting*>(endState.get());
+  ASSERT_TRUE(inputtingState != nullptr);
+  EXPECT_EQ(inputtingState->composingBuffer, "車");
+  EXPECT_EQ(inputtingState->cursorIndex, strlen("車"));
+}
+
 TEST_F(
     KeyHandlerTest,
     NonViableCompositionShouldRevertToEmptyStateIfComposingBufferEndsUpEmptyCase2) {
