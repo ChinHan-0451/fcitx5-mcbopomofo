@@ -149,19 +149,24 @@ bool KeyHandler::handle(Key key, McBopomofo::InputState* state,
   bool keyConsumedByReading = false;
   // A tone can remain in the reading either after a failed composition or
   // when it was entered on its own. Apply the same configurable behavior in
-  // both cases when the next key is another valid Bopomofo component. Space
-  // is deliberately excluded because it composes a standalone tone marker.
+  // both cases when the next key is another valid Bopomofo component. After a
+  // failed composition, Space can also retry a viable reading without tone.
+  // A standalone tone marker still composes on Space.
   if (keepInvalidSyllableForFurtherInput_ &&
       (readingCompositionFailed_ || reading_.hasToneMarkerOnly()) &&
       reading_.hasToneMarker()) {
     auto readingWithoutTone = reading_;
     readingWithoutTone.backspace();
+    bool retryWithoutTone =
+        readingCompositionFailed_ && simpleAscii == Key::SPACE &&
+        !readingWithoutTone.isEmpty() &&
+        lm_->hasUnigrams(readingWithoutTone.syllable().composedString());
     auto readingWithNewKey = readingWithoutTone;
     bool newKeyIsNonToneBopomofo =
         readingWithNewKey.isValidKey(simpleAscii) &&
         readingWithNewKey.combineKey(simpleAscii) &&
         !readingWithNewKey.hasToneMarker();
-    if (newKeyIsNonToneBopomofo) {
+    if (retryWithoutTone || newKeyIsNonToneBopomofo) {
       readingCompositionFailed_ = false;
       reading_ = readingWithoutTone;
     }
